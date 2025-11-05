@@ -1,5 +1,4 @@
 [project]
-name = "job-bot"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -15,6 +14,9 @@ dependencies = [
     "streamlit>=1.51.0",
     "uvicorn>=0.38.0",
 ]
+
+[tool.poetry]
+package-mode = false
 
 [tool.uv]
 no-project = true
