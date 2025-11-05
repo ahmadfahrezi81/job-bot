@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
-set -eux
+# Render build script
 
-uv sync  # Install dependencies
-uv run playwright install --with-deps chromium
+set -o errexit  # Exit on error
+
+# Install dependencies using Poetry
+echo "🚀 Installing dependencies with Poetry..."
+poetry install --no-root
+
+# (Optional) If you need to build Playwright dependencies, add this:
+echo "🎭 Installing Playwright browsers..."
+poetry run playwright install chromium
