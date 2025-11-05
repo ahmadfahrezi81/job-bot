@@ -2,11 +2,17 @@ import streamlit as st
 import requests
 import time
 import random
+import os
+from dotenv import load_dotenv
 
-API_URL = "http://localhost:8000/jobs/add"
+# Load env vars
+load_dotenv()
+
+API_URL = os.getenv("API_URL")
 
 st.set_page_config(page_title="Job Evaluator", page_icon="💼", layout="centered")
 st.title("💼 Job Evaluator Dashboard")
+
 
 st.markdown(
     """
