@@ -1,0 +1,62 @@
+# --- Python cache & build files ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+build/
+dist/
+*.spec
+
+# --- Virtual environments ---
+.venv/
+env/
+venv/
+ENV/
+
+# --- IDE & editor configs ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*.DS_Store
+
+# --- Local environment variables ---
+.env
+*.env.*
+
+# --- Debug and temp files ---
+*.log
+*.tmp
+*.bak
+*.old
+*.out
+*.pid
+
+# --- Crawl / normalization / scrape debug data ---
+crawl4ai_debug/
+normalize_debug/
+scrape_debug/
+
+# --- Streamlit and cache ---
+.streamlit/
+**/.streamlit/
+.streamlit/secrets.toml
+
+# --- uv / poetry / pip ---
+uv.lock
+poetry.lock
+__pypackages__/
+
+# --- NodeJS stuff (if any frontend assets appear) ---
+node_modules/
+package-lock.json
+yarn.lock
+
+# --- OS-specific ---
+Thumbs.db
+.DS_Store
+
+.history

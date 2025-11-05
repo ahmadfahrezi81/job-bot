@@ -1,0 +1,17 @@
+[project]
+name = "job-bot"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "crawl4ai>=0.7.6",
+    "fastapi>=0.121.0",
+    "notion-client>=2.7.0",
+    "openai>=2.7.1",
+    "playwright>=1.55.0",
+    "python-dotenv>=1.2.1",
+    "requests>=2.32.5",
+    "streamlit>=1.51.0",
+    "uvicorn>=0.38.0",
+]
