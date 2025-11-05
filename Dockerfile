@@ -1,28 +1,53 @@
-# Use Playwright's official Python image (includes browsers & dependencies)
-FROM mcr.microsoft.com/playwright/python:latest
+FROM python:3.11-slim
 
-# Create app directory
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV UV_CACHE_DIR=/root/.cache/uv
+
+# Install system packages for Playwright
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    git \
+    build-essential \
+    wget \
+    libnss3 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libx11-6 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
+    libgbm1 \
+    libasound2 \
+    libpangocairo-1.0-0 \
+    libgtk-3-0 \
+    libxss1 \
+    libglib2.0-0 \
+    libx11-xcb1 \
+    libxcb1 \
+    libdrm2 \
+    libexpat1 \
+    libfontconfig1 \
+    libpango-1.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install uv
+RUN pip install uv
+
 WORKDIR /usr/src/app
 
-# Upgrade pip and install poetry (or use pip if you prefer)
-RUN python -m pip install --upgrade pip
-RUN pip install poetry
+# Copy dependencies and install (✅ include lock file)
+COPY pyproject.toml uv.lock /usr/src/app/
+RUN uv sync --frozen --no-dev
 
-# Copy dependency metadata first for layer caching
-COPY pyproject.toml poetry.lock* /usr/src/app/
-
-# Configure poetry to not create virtualenvs (so dependencies are available in container)
-RUN poetry config virtualenvs.create false \
-    && poetry install --no-interaction --no-ansi
-
-# Copy the rest of the application code
+# Copy source code
 COPY . /usr/src/app
 
-# Ensure Playwright browsers path is set (optional; base image already contains browsers)
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+# Install Playwright browsers
+RUN uv run playwright install chromium
 
-# Expose port (match your FastAPI port, Render may provide $PORT at runtime)
 EXPOSE 10000
 
-# Run uvicorn (use the same module path as your project)
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000", "--proxy-headers"]
+CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000"]
