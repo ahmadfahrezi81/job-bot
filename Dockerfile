@@ -53,23 +53,22 @@
 # CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000"]
 
 
-# =========================
-# Stage 1: Builder
-# Full environment for compilation
-# =========================
-FROM python:3.11-slim AS builder
+FROM python:3.11-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV UV_CACHE_DIR=/root/.cache/uv
 
-# Install system packages for Playwright & LaTeX
+# Install system packages for Playwright + Tectonic
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
     git \
     build-essential \
     wget \
+    unzip \
+    tar \
+    xz-utils \
     libnss3 \
     libatk1.0-0 \
     libatk-bridge2.0-0 \
@@ -90,54 +89,47 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libexpat1 \
     libfontconfig1 \
     libpango-1.0-0 \
-    texlive-latex-base \
-    texlive-latex-recommended \
-    texlive-fonts-recommended \
-    texlive-latex-extra \
-    latexmk \
+    libfreetype6 \
+    libxext6 \
+    libxrender1 \
+    libxi6 \
+    libgraphite2-3 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv
-RUN pip install uv
+# Install Tectonic (LaTeX engine for PDF compilation)
+WORKDIR /tmp
+# Detect architecture and download correct binary
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then \
+    curl -LO https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%400.15.0/tectonic-0.15.0-aarch64-unknown-linux-musl.tar.gz && \
+    tar -xzf tectonic-0.15.0-aarch64-unknown-linux-musl.tar.gz; \
+    else \
+    curl -LO https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%400.15.0/tectonic-0.15.0-x86_64-unknown-linux-gnu.tar.gz && \
+    tar -xzf tectonic-0.15.0-x86_64-unknown-linux-gnu.tar.gz; \
+    fi && \
+    mv tectonic /usr/local/bin/tectonic && \
+    chmod +x /usr/local/bin/tectonic && \
+    rm -rf /tmp/*
 
-WORKDIR /usr/src/app
+# Verify Tectonic install
+RUN tectonic --version
+
+# Install uv
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:${PATH}"
+
+WORKDIR /app
 
 # Copy dependencies and install
-COPY pyproject.toml uv.lock /usr/src/app/
-RUN uv sync --frozen --no-dev
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen
 
 # Copy source code
-COPY . /usr/src/app
+COPY . .
 
 # Install Playwright browsers
 RUN uv run playwright install chromium
 
-# =========================
-# Stage 2: Runtime
-# Only runtime dependencies (smaller)
-# =========================
-FROM python:3.11-slim
+EXPOSE 8000
 
-ENV PYTHONUNBUFFERED=1
-ENV UV_CACHE_DIR=/root/.cache/uv
-
-WORKDIR /usr/src/app
-
-# Copy Python environment from builder
-COPY --from=builder /root/.cache/uv /root/.cache/uv
-COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-COPY --from=builder /usr/local/bin/uv /usr/local/bin/uv
-
-# Copy Playwright browser binaries
-COPY --from=builder /root/.cache/ms-playwright /root/.cache/ms-playwright
-
-# Copy source code
-COPY --from=builder /usr/src/app /usr/src/app
-
-# Copy LaTeX runtime (needed for PDF compilation)
-COPY --from=builder /usr/share/texlive /usr/share/texlive
-COPY --from=builder /usr/share/texmf /usr/share/texmf
-
-EXPOSE 10000
-
-CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000"]
+CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

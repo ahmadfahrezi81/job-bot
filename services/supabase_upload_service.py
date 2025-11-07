@@ -4,6 +4,8 @@ import os
 from datetime import datetime
 from supabase import create_client, Client
 import re
+import uuid
+
 
 logger = logging.getLogger(__name__)
 
@@ -55,8 +57,14 @@ async def upload_pdf_to_supabase(
 
     position_clean = sanitize(position or "role")
     company_clean = sanitize(company or "company")
+    # Generate timestamp
     timestamp = datetime.utcnow().strftime("%Y%m%d")
-    filename = f"{filename_prefix}_{position_clean}_{company_clean}_{timestamp}.pdf"
+
+    # Generate short 4-character unique ID
+    unique_id = uuid.uuid4().hex[:4]
+
+    # Build filename
+    filename = f"{filename_prefix}_{position_clean}_{company_clean}_{timestamp}_{unique_id}.pdf"
 
     logger.info(f"📤 Uploading {filename} to Supabase bucket '{bucket_name}'...")
     logger.info(f"   • Size: {len(pdf_bytes)} bytes")

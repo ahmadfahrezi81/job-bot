@@ -134,7 +134,7 @@ if submit_button and urls:
                     response = requests.post(
                         API_URL,
                         json={"url": url, "force_playwright": force_playwright},
-                        timeout=120,  # 2 minutes max per job
+                        timeout=240,  # 4 minutes - comfortable buffer
                     )
 
                     elapsed = time.time() - start_time
