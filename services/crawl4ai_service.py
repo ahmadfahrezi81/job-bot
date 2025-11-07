@@ -34,6 +34,103 @@ class NormalizedJob(BaseModel):
     job_description: str = Field(
         description="Full cleaned job description with markdown formatting"
     )
+    visa_feasibility: str | None = Field(
+        description=(
+            "Visa feasibility from the perspective of an applicant based in Indonesia. "
+            "One of: eligible, possible, restricted, unknown."
+        ),
+        default=None,
+    )
+    job_available: bool = Field(
+        description="Whether the job posting is still active/available (not filled or closed)",
+        default=True,
+    )
+    unavailable_reason: str | None = Field(
+        description="Reason if job is not available (e.g., 'Position filled', 'Posting expired', 'Page not found')",
+        default=None,
+    )
+
+
+def infer_visa_feasibility(normalized: dict, user_country: str = "Indonesia") -> str:
+    """Fallback heuristic to infer visa feasibility if LLM fails to provide it."""
+    loc = (normalized.get("location") or "").lower()
+    desc = (normalized.get("job_description") or "").lower()
+
+    # 1. Same country → eligible
+    if user_country.lower() in loc:
+        return "eligible"
+
+    # 2. Restricted language
+    restricted_terms = [
+        "no visa sponsorship",
+        "must have work authorization",
+        "authorized to work",
+        "locals only",
+        "work permit required",
+        "no relocation support",
+    ]
+    if any(term in desc for term in restricted_terms):
+        return "restricted"
+
+    # 3. Foreign job but no explicit restriction
+    known_countries = ["singapore", "malaysia", "australia", "usa", "uk", "canada"]
+    if any(country in loc for country in known_countries):
+        return "possible"
+
+    # 4. Default
+    return "unknown"
+
+
+def detect_job_unavailable(markdown: str, url: str) -> tuple[bool, str | None]:
+    """
+    Detect if a job posting is no longer available.
+
+    Returns: (is_unavailable, reason)
+    """
+    if not markdown or len(markdown.strip()) < 100:
+        return True, "Page content too short or empty"
+
+    markdown_lower = markdown.lower()
+
+    # Common patterns for unavailable jobs
+    unavailable_patterns = [
+        ("position has been filled", "Position already filled"),
+        ("this job is no longer available", "Job posting closed"),
+        ("posting has expired", "Posting expired"),
+        ("job posting is no longer active", "Job no longer active"),
+        ("position is no longer open", "Position closed"),
+        ("this position has been closed", "Position closed"),
+        ("404", "Page not found (404)"),
+        ("page not found", "Page not found"),
+        (
+            "sorry, this job is no longer accepting applications",
+            "No longer accepting applications",
+        ),
+        ("this opportunity is no longer available", "Opportunity closed"),
+    ]
+
+    for pattern, reason in unavailable_patterns:
+        if pattern in markdown_lower:
+            logger.warning(f"[Crawl4AI] 🚫 Detected unavailable job: {reason}")
+            return True, reason
+
+    # Check if content looks like actual job posting
+    job_indicators = [
+        "responsibilities",
+        "requirements",
+        "qualifications",
+        "about the role",
+        "what you'll do",
+        "job description",
+        "apply now",
+    ]
+
+    has_job_content = any(indicator in markdown_lower for indicator in job_indicators)
+
+    if not has_job_content and len(markdown) < 500:
+        return True, "No job description found - possibly removed or expired"
+
+    return False, None
 
 
 async def crawl4ai_extract(url: str) -> dict:
@@ -41,6 +138,9 @@ async def crawl4ai_extract(url: str) -> dict:
     Extract normalized job data using Crawl4AI + LLM strategy.
 
     Returns normalized job dict or raises exception on failure.
+    Special exceptions:
+    - JobUnavailableError: Job posting no longer available
+    - VisaRestrictedError: Job has visa restrictions
     """
     logger.info(f"[Crawl4AI] Starting extraction: {url}")
 
@@ -50,23 +150,34 @@ async def crawl4ai_extract(url: str) -> dict:
         # More specific extraction instructions
         extraction_prompt = """
         You are extracting job posting data from a webpage.
+
+        CRITICAL: First, determine if this job posting is still available:
+        - Look for messages like "position filled", "no longer available", "expired", etc.
+        - If you see such messages, set job_available=false and provide unavailable_reason
         
-        CRITICAL: You MUST find and extract the job information. Look for:
+        If the job IS available, extract:
         - Job title (e.g., "Software Engineer", "Product Manager")
         - Company name
         - Location information (city, country, or "Remote")
         - Full job description including responsibilities, requirements, benefits
-        
+
+        Additionally, infer "visa_feasibility" from the perspective of an applicant based in **Indonesia**.
+        Possible values:
+        - "eligible" → Job is in Indonesia, or explicitly open to Indonesian candidates.
+        - "possible" → Job is outside Indonesia but does not mention visa restrictions.
+        - "restricted" → Job explicitly states "no visa sponsorship", "locals only", "must have work authorization", or similar.
+        - "unknown" → Insufficient information to determine.
+
         Clean up the description by removing:
         - Navigation menus, headers, footers
         - "Apply now" buttons
         - Cookie banners
         - reCAPTCHA notices
         - "Powered by Workday" or similar footers
-        
+
         Keep the complete job description with all details intact.
         Preserve any markdown formatting, bullet points, and emojis.
-        
+
         Return the data as a single JSON object (not an array).
         """
 
@@ -76,24 +187,23 @@ async def crawl4ai_extract(url: str) -> dict:
         )
 
         extraction_strategy = LLMExtractionStrategy(
-            llm_config=llm_config,  # ✅ Use llm_config parameter
+            llm_config=llm_config,
             schema=NormalizedJob.model_json_schema(),
             extraction_type="schema",
             instruction=extraction_prompt,
-            chunk_token_threshold=4000,  # Handle larger content
+            chunk_token_threshold=4000,
             apply_chunking=True,
-            input_format="markdown",  # Use markdown for cleaner extraction
+            input_format="markdown",
             extra_args={"temperature": 0, "max_tokens": 2000},
         )
 
         # ✅ Use CrawlerRunConfig as per docs
         crawl_config = CrawlerRunConfig(
             extraction_strategy=extraction_strategy,
-            cache_mode=CacheMode.BYPASS,  # Always fresh for job posts
+            cache_mode=CacheMode.BYPASS,
             word_count_threshold=10,
-            # Add wait time for dynamic content
             wait_for="body",
-            delay_before_return_html=2.0,  # Wait 2s for content to load
+            delay_before_return_html=2.0,
         )
 
         browser_config = BrowserConfig(headless=True, verbose=True)
@@ -104,49 +214,50 @@ async def crawl4ai_extract(url: str) -> dict:
             if not result.success:
                 raise Exception(f"Crawl failed: {result.error_message}")
 
-            # Debug: Save the raw markdown to see what LLM is seeing
+            # Debug: Save raw markdown
             markdown_debug = f"{DEBUG_DIR}/markdown_{timestamp}.md"
             with open(markdown_debug, "w", encoding="utf-8") as f:
                 f.write(result.markdown or "NO MARKDOWN")
             logger.info(f"[Crawl4AI] Saved markdown → {markdown_debug}")
 
-            # Parse extracted content
-            extracted = result.extracted_content
+            # ✅ Check if job is unavailable (before LLM parsing)
+            is_unavailable, unavailable_reason = detect_job_unavailable(
+                result.markdown, url
+            )
 
+            if is_unavailable:
+                logger.warning(f"[Crawl4AI] 🚫 Job unavailable: {unavailable_reason}")
+                raise JobUnavailableError(unavailable_reason)
+
+            extracted = result.extracted_content
             if not extracted:
                 raise Exception("No content extracted")
 
-            # Debug: Log what we got
-            logger.debug(f"[Crawl4AI] Raw extracted type: {type(extracted)}")
-            logger.debug(f"[Crawl4AI] Raw extracted preview: {str(extracted)[:200]}")
-
-            # Parse JSON response from LLM
             if isinstance(extracted, str):
                 parsed = json.loads(extracted)
             else:
-                parsed = extracted  # Already parsed
+                parsed = extracted
 
-            logger.debug(f"[Crawl4AI] Parsed type: {type(parsed)}")
-
-            # Handle if LLM returns array instead of object
             if isinstance(parsed, list):
-                if len(parsed) == 0:
-                    # LLM returned empty - might be content issue
-                    raise Exception(
-                        f"LLM returned empty array. "
-                        f"Markdown had {len(result.markdown or '')} chars. "
-                        f"Check {markdown_debug} to see what LLM received."
-                    )
-                normalized = parsed[0]  # Take first item
+                if not parsed:
+                    raise Exception("LLM returned empty array.")
+                normalized = parsed[0]
                 logger.warning("[Crawl4AI] LLM returned array, using first item")
             elif isinstance(parsed, dict):
                 normalized = parsed
             else:
                 raise Exception(f"Unexpected parsed type: {type(parsed)}")
 
-            # Validate we have a dict now
             if not isinstance(normalized, dict):
                 raise Exception(f"Normalized is not a dict: {type(normalized)}")
+
+            # ✅ Check if LLM detected job as unavailable
+            if not normalized.get("job_available", True):
+                reason = normalized.get(
+                    "unavailable_reason", "Job posting no longer available"
+                )
+                logger.warning(f"[Crawl4AI] 🚫 LLM detected unavailable job: {reason}")
+                raise JobUnavailableError(reason)
 
             # Ensure required fields exist
             if not normalized.get("job_title") or not normalized.get("job_description"):
@@ -158,8 +269,20 @@ async def crawl4ai_extract(url: str) -> dict:
             normalized["url"] = url
             normalized["source_title"] = result.metadata.get("title", "")
 
+            # Ensure visa_feasibility always set
+            if not normalized.get("visa_feasibility"):
+                normalized["visa_feasibility"] = infer_visa_feasibility(normalized)
+
+            # ✅ Check if visa is restricted - raise special exception
+            if normalized.get("visa_feasibility") == "restricted":
+                logger.warning(f"[Crawl4AI] 🚫 Visa restricted for this position")
+                raise VisaRestrictedError(
+                    "Job requires work authorization/visa sponsorship not available"
+                )
+
             logger.info(
-                f"[Crawl4AI] ✅ Extracted: {normalized.get('job_title')} @ {normalized.get('company_name')}"
+                f"[Crawl4AI] ✅ Extracted: {normalized.get('job_title')} @ {normalized.get('company_name')} "
+                f"(Visa: {normalized.get('visa_feasibility')})"
             )
 
             # Save debug info
@@ -171,24 +294,22 @@ async def crawl4ai_extract(url: str) -> dict:
                 "markdown_length": len(result.markdown) if result.markdown else 0,
                 "timestamp": timestamp,
             }
-
             with open(debug_file, "w", encoding="utf-8") as f:
                 json.dump(debug_payload, f, ensure_ascii=False, indent=2)
 
             logger.info(f"[Crawl4AI] Debug saved → {debug_file}")
 
-            # Optional: Show token usage
             extraction_strategy.show_usage()
-
             return normalized
+
+    except (JobUnavailableError, VisaRestrictedError):
+        # Re-raise these special exceptions so routes.py can handle them
+        raise
 
     except Exception as e:
         logger.error(f"[Crawl4AI] ❌ Failed: {str(e)}")
 
-        # Save failure debug with more context
         debug_file = f"{DEBUG_DIR}/crawl4ai_fail_{timestamp}.json"
-
-        # Try to capture what we got before failing
         debug_payload = {
             "url": url,
             "error": str(e),
@@ -196,7 +317,6 @@ async def crawl4ai_extract(url: str) -> dict:
             "timestamp": timestamp,
         }
 
-        # Try to add extracted content if available
         try:
             if "result" in locals() and result:
                 debug_payload["result_success"] = result.success
@@ -206,12 +326,24 @@ async def crawl4ai_extract(url: str) -> dict:
                 debug_payload["extracted_content_preview"] = str(
                     result.extracted_content
                 )[:500]
-        except:
+        except Exception:
             pass
 
         with open(debug_file, "w", encoding="utf-8") as f:
             json.dump(debug_payload, f, ensure_ascii=False, indent=2)
 
         logger.info(f"[Crawl4AI] Debug saved → {debug_file}")
-
         raise Exception(f"Crawl4AI extraction failed: {str(e)}")
+
+
+# Custom exceptions for better error handling
+class JobUnavailableError(Exception):
+    """Raised when job posting is no longer available"""
+
+    pass
+
+
+class VisaRestrictedError(Exception):
+    """Raised when job has visa restrictions"""
+
+    pass

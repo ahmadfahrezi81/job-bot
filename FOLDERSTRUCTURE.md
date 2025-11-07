@@ -1,0 +1,46 @@
+```
+└── 📁job-bot
+    └── 📁.venv
+    └── 📁app
+        └── 📁__pycache__
+        ├── main.py
+        ├── routes.py
+    └── 📁crawl4ai_debug
+    └── 📁data
+        └── 📁tmp_debug_pdf
+            ├── main.aux
+            ├── main.pdf
+            ├── main.tex
+            ├── resume-content-run.tex
+            ├── resume-content.tex
+        ├── debug-output.pdf
+        ├── debug-tailored.tex
+        ├── main.aux
+        ├── main.pdf
+        ├── main.tex
+        ├── resume-content.tex
+    └── 📁normalize_debug
+    └── 📁scrape_debug
+    └── 📁services
+        └── 📁__pycache__
+        ├── crawl4ai_service.py
+        ├── duplicate_checker_service.py
+        ├── job_processor_service.py
+        ├── llm_evaluation_service.py
+        ├── llm_normalization_service.py
+        ├── llm_resume_service.py
+        ├── notion_service.py
+        ├── pdf_compilation_service.py
+        ├── playwright_scraper_service.py
+        ├── supabase_upload_service.py
+    ├── .gitignore
+    ├── .python-version
+    ├── Dockerfile
+    ├── FOLDERSTRUCTURE.md
+    ├── notion_test_httpx_async.py
+    ├── notion_test_httpx.py
+    ├── pyproject.toml
+    ├── README.md
+    ├── streamlit_app.py
+    └── test_pdf_compile.py
+```

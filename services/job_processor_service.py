@@ -5,7 +5,11 @@ Tries fast Crawl4AI path first, falls back to Playwright + normalization.
 """
 import logging
 import time
-from services.crawl4ai_service import crawl4ai_extract
+from services.crawl4ai_service import (
+    crawl4ai_extract,
+    JobUnavailableError,
+    VisaRestrictedError,
+)
 from services.playwright_scraper_service import playwright_scrape_job
 from services.llm_normalization_service import llm_normalize_job_data
 
@@ -20,6 +24,10 @@ async def extract_job_data(url: str, force_playwright: bool = False) -> dict:
     1. Try Crawl4AI (fast, ~5-10s)
     2. On failure, use Playwright + LLM normalization (robust, ~30s)
 
+    Special exceptions that prevent fallback:
+    - JobUnavailableError: Job posting no longer exists
+    - VisaRestrictedError: Job has visa restrictions
+
     Args:
         url: Job posting URL
         force_playwright: Skip Crawl4AI and use Playwright directly
@@ -28,6 +36,10 @@ async def extract_job_data(url: str, force_playwright: bool = False) -> dict:
         Normalized job dict with keys:
         - url, job_title, company_name, location, work_mode,
           job_description, source_title
+
+    Raises:
+        JobUnavailableError: When job posting is closed/filled
+        VisaRestrictedError: When job has visa restrictions
     """
 
     # Optional: Force Playwright for testing or known problematic sites
@@ -54,7 +66,18 @@ async def extract_job_data(url: str, force_playwright: bool = False) -> dict:
         normalized["extraction_time"] = round(elapsed, 2)
         return normalized
 
+    except (JobUnavailableError, VisaRestrictedError) as e:
+        # ✅ DO NOT FALLBACK - these are intentional stops
+        elapsed = time.time() - start_time
+        logger.warning(
+            f"[JobProcessor] 🚫 Stopping processing after {elapsed:.2f}s: {str(e)}"
+        )
+        logger.info(f"[JobProcessor] ⛔ No fallback - job should not be processed")
+        # Re-raise to bubble up to routes.py
+        raise
+
     except Exception as e:
+        # ✅ Only fallback for technical failures, not business logic stops
         elapsed = time.time() - start_time
         logger.warning(f"[JobProcessor] Crawl4AI failed after {elapsed:.2f}s: {str(e)}")
         logger.info(f"[JobProcessor] 🔄 Falling back to Playwright path...")
