@@ -8,15 +8,29 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Optional: log them once (safe, only partial token)
-print(f"🔑 Notion API loaded: {os.getenv('NOTION_API_KEY')[:8]}...")
-print(f"🗂️ Database ID loaded: {os.getenv('NOTION_DATABASE_ID')}")
+# # Set up logging
+# logging.basicConfig(
+#     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+# )
 
+# Set up logging level from environment
+log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 
-# Set up logging
+# Defensive map (avoids invalid strings breaking logging)
+LOG_LEVELS = {
+    "CRITICAL": logging.CRITICAL,
+    "ERROR": logging.ERROR,
+    "WARNING": logging.WARNING,
+    "INFO": logging.INFO,
+    "DEBUG": logging.DEBUG,
+}
+
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=LOG_LEVELS.get(log_level, logging.INFO),
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
+
+print(f"🔧 Logging level set to: {log_level}")
 
 
 app = FastAPI(title="Job Bot API")

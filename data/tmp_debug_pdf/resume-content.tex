@@ -1,22 +1,5 @@
 %-------------------------
 % RESUME CONTENT FILE
-% 
-% LLM MODIFICATION INSTRUCTIONS:
-% This file contains ONLY the content of the resume (no formatting commands).
-% When tailoring for job applications:
-% 1. You can modify bullet points, but keep them concise and achievement-focused
-% 2. You can reorder sections if needed
-% 3. You can add/remove experiences or projects
-% 4. ALWAYS maintain the command structure shown below
-% 5. Do NOT remove \resumeSubHeadingListStart or \resumeSubHeadingListEnd
-% 6. Do NOT modify any \resumeSubheading, \resumeItem, or other command formats
-% 7. Keep all braces {} balanced
-% 8. Maintain consistent date formats (MMM. YYYY)
-%
-% COMMAND PATTERNS TO FOLLOW:
-% - Experience: \resumeSubheading{Job Title}{Date Range}{Company Name}{Location}
-% - Projects: \resumeProjectHeading{Name}{URL}{Tech Stack}
-% - Bullets: \resumeItem{Text content here}
 %-------------------------
 
 %-------------------------
@@ -33,66 +16,68 @@
 \section{Technical Skills}
  \begin{itemize}[leftmargin=0.15in, label={}]
     \small{\item{
-     \textbf{Languages}{: Python, JavaScript, TypeScript, Java, SQL, PHP} \\
-     \textbf{Frameworks}{: React, Next.js, React Native, Node.js, Spring Boot, Vue.js, Remix} \\
-     \textbf{Testing \& Automation}{: Appium, Selenium, Jest, Pytest, Test Planning, QA Automation} \\
-     \textbf{Tools}{: Git, Docker, Firebase, AWS (EC2, S3), GitHub Actions, Figma, Supabase, Jenkins} \\ 
-     \textbf{Databases}{: PostgreSQL, MySQL, MongoDB, Oracle, Prisma, Firebase Realtime DB} \\
-     \textbf{Other}{: REST APIs, Authentication (JWT, OAuth, SSO), CI/CD, Agile/Scrum, SEO Optimization, RBAC} }}
+     \textbf{Testing \& Automation}{: Pytest, Selenium, Appium, Postman, Test Planning, QA Automation} \\
+     \textbf{Languages}{: Python, SQL, JavaScript, TypeScript, Java} \\
+     \textbf{Tools}{: Git, Docker, Jenkins, GitHub Actions, Figma, Supabase} \\
+     \textbf{Databases}{: PostgreSQL, MySQL, MongoDB} \\
+     \textbf{Other}{: REST APIs, CI/CD, Agile/Scrum, RBAC} }}
  \end{itemize}
 
 %-------------------------
 % EXPERIENCE SECTION
-% Format: \resumeSubheading{Job Title}{Date Range}{Company Name}{Location}
 %-------------------------
 \section{Experience}
   \resumeSubHeadingListStart
 
     \resumeSubheading
-      {Software Engineer Intern – QA Automation}{July 2024 -- Dec. 2024}
+      {Software Engineer Intern -- QA Automation}{July 2024 -- Dec. 2024}
       {Grab}{Petaling Jaya, MY}
       \resumeItemListStart
-        \resumeItem{Spearheaded development of an AI-powered test automation agent, eliminating manual scripting overhead for authentication workflows and accelerating test development by 60\%.}
-        \resumeItem{Delivered 22 production-grade Python automation scripts using Appium and Selenium frameworks, exceeding H2 2024 automation coverage targets by 15\% for Grab's Identity platform.}
-        \resumeItem{Executed critical weekly regression test suites ensuring platform stability and security for 200+ million Grab users across 8 Southeast Asian markets.}
-        \resumeItem{Identified and documented 40+ bugs across authentication flows, including 8 critical security vulnerabilities, directly contributing to improved user trust and platform reliability.}
+        \resumeItem{Accelerated test development by 60\%  via AI-powered automation agent for authentication workflows.}
+        \resumeItem{Delivered 22 production-grade Python scripts with Appium and Selenium, boosting coverage by 15\% .}
+        \resumeItem{Designed and executed weekly regression suites certifying releases for 200+M users across 8 markets.}
+        \resumeItem{Tested REST APIs with Postman and validated data via SQL queries, reducing API defects by 30\% .}
+        \resumeItem{Collaborated with PMs, designers  \&  engineers across 3 squads to define test strategy for new features.}
+        \resumeItem{Identified 40+ bugs including 8 critical security issues, elevating platform reliability and user trust.}
       \resumeItemListEnd
       
     \resumeSubheading
       {Frontend Developer}{Oct. 2022 -- Feb. 2024}
       {CommerceOwl}{Edmonton, CA (remote)}
       \resumeItemListStart
-        \resumeItem{Architected and delivered feature-rich web applications across multiple JavaScript ecosystems (React, Remix, Next.js, Vue.js) with 95\%+ test coverage using Jest and React Testing Library.}
-        \resumeItem{Drove 32\% increase in conversion rates for RecipeStack Shopify app through strategic UI/UX improvements, A/B testing, and performance optimizations that reduced page load times by 40\%.}
-        \resumeItem{Collaborated with backend teams to integrate RESTful APIs and optimize data fetching patterns, reducing client-side data requests by 45\%.}
+        \resumeItem{Achieved 95\% + test coverage on React, Next.js and Vue.js apps using Jest  \&  React Testing Library.}
+        \resumeItem{Integrated RESTful APIs and optimized data-fetch patterns, cutting client requests by 45\% .}
       \resumeItemListEnd
 
    \resumeSubheading
       {Software Engineer Intern}{July 2023 -- Oct. 2023}
       {UM PTM}{Kuala Lumpur, MY}
       \resumeItemListStart
-        \resumeItem{Instrumental in modernizing UM's legacy procurement system, building a full-stack web application using PHP MVC architecture and MySQL that streamlined procurement workflows for 500+ university staff.}
-        \resumeItem{Engineered robust server-side validation layer in PHP with MySQL constraints and triggers, preventing data corruption and ensuring compliance with university procurement policies.}
+        \resumeItem{Streamlined procurement workflows for 500+ staff via PHP MVC app and MySQL, reducing processing time by 50\% .}
+        \resumeItem{Engineered normalized schema with 15+ tables and constraints, ensuring data integrity and compliance.}
+        \resumeItem{Collaborated in Agile sprints with 5 departments to define requirements  \&  deliver modular, testable components.}
       \resumeItemListEnd
 
   \resumeSubHeadingListEnd
 
 %-------------------------
 % PROJECTS SECTION
-% Format: \resumeProjectHeading{Project Name}{GitHub URL}{Tech Stack}
 %-------------------------
 \section{Projects}
     \resumeSubHeadingListStart
-       \resumeProjectHeading{TeaPOS -- Multi-Tenant Point-of-Sale Platform}{https://github.com/ahmadfahrezi81/tea-pos}{Next.js 14, TypeScript, Supabase, PostgreSQL, Tailwind, Chart.js, shadcn/ui}
+       \resumeProjectHeading{TeaPOS -- Multi-Tenant POS}{https://github.com/ahmadfahrezi81/tea-pos}{Next.js 14, TypeScript, Supabase, PostgreSQL, Tailwind, Chart.js}
           \resumeItemListStart
-            \resumeItem{Architected enterprise-grade, multi-tenant SaaS POS system supporting isolated data management for unlimited organizations with tenant-scoped users, stores, and real-time financial analytics.}
-            \resumeItem{Engineered normalized Supabase schema with 12+ relational tables (orders, products, tenants, expenses, summaries) implementing row-level security policies for bulletproof data isolation.}
-            \resumeItem{Built responsive admin dashboard leveraging Next.js 14 App Router, React Server Components, and Chart.js for real-time sales visualization and business intelligence.}
+            \resumeItem{Built multi-tenant SaaS POS with row-level security, isolating data for unlimited organizations.}
+            \resumeItem{Engineered normalized Supabase schema with 12+ tables and policies, enforcing tenant-specific access.}
+            \resumeItem{Developed real-time dashboards using React Server Components  \&  Chart.js for sales analytics.}
+            \resumeItem{Implemented RBAC middleware and Supabase Auth, enabling fine-grained store-level permissions.}
           \resumeItemListEnd
-       \resumeProjectHeading{Eco-Mobility Tracker}{https://github.com/ahmadfahrezi81/Eco-Mobility-Mobile-App}{React Native, Next.js, TypeScript, Redux, Firebase, Expo, Google Maps API}
+       \resumeProjectHeading{Eco-Mobility Tracker}{https://github.com/ahmadfahrezi81/Eco-Mobility-Mobile-App}{React Native, Next.js, TypeScript, Firebase, Expo, Google Maps API}
           \resumeItemListStart
-            \resumeItem{Engineered cross-platform mobile application tracking real-time carbon footprints using GPS sensors, accelerometer data, and machine learning-based transport mode detection.}
-            \resumeItem{Established automated CI/CD pipeline using Expo EAS and GitHub Actions for continuous testing, building, and deployment across Android and iOS platforms.}
+            \resumeItem{Engineered cross-platform app tracking carbon footprints using GPS and ML-based transport detection.}
+            \resumeItem{Optimized background data batching reducing battery use by 28\%  while maintaining 99\%  sync reliability.}
+            \resumeItem{Integrated Google Maps API for route visualization  \&  heatmaps, syncing data via Firebase Realtime DB.}
+            \resumeItem{Established CI/CD pipeline with Expo EAS  \&  GitHub Actions for automated testing and deployments.}
           \resumeItemListEnd
     \resumeSubHeadingListEnd
 
@@ -105,6 +90,6 @@
       {University of Malaya}{Kuala Lumpur, MY}
       {Bachelor of Computer Science, Software Engineering}{Oct. 2021 -- Oct. 2025}
     \resumeItemListStart
-        \resumeItem{\textbf{Relevant Coursework}: Data Structures \& Algorithms, Database Systems (Oracle, MySQL, MongoDB), Object-Oriented Design \& Implementation, Mobile App Development (Android), Machine Learning (TensorFlow), Web Development (Spring Boot, PHP, React), Software Engineering Principles}
+        \resumeItem{\textbf{Relevant Coursework}: Data Structures and Algorithms, Database Systems (Oracle, MySQL, MongoDB), Object-Oriented Design, Mobile App Development, Machine Learning, Web Development, Software Engineering Principles}
     \resumeItemListEnd
   \resumeSubHeadingListEnd

@@ -206,7 +206,7 @@ async def crawl4ai_extract(url: str) -> dict:
             delay_before_return_html=2.0,
         )
 
-        browser_config = BrowserConfig(headless=True, verbose=True)
+        browser_config = BrowserConfig(headless=True, verbose=True, text_mode=True)
 
         async with AsyncWebCrawler(config=browser_config, verbose=True) as crawler:
             result = await crawler.arun(url=url, config=crawl_config)

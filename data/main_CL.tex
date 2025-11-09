@@ -1,0 +1,65 @@
+%-------------------------
+% Cover Letter Template
+% Author : Ahmad Fahrezi
+% License : MIT
+% 
+% INSTRUCTIONS FOR LLM UPDATES:
+% - DO NOT modify this file (cover-letter-main.tex)
+% - Only modify cover-letter-content.tex
+% - This file contains all formatting and styling
+%------------------------
+
+\documentclass[11pt,letterpaper]{letter}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{parskip}
+\usepackage{enumitem}
+
+% Hyperlink settings
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=black,
+    urlcolor=black,
+    citecolor=black
+}
+
+% Font options (uncomment one if desired)
+% \usepackage[sfdefault]{roboto}
+% \usepackage{lmodern}
+
+% Remove default date
+\date{}
+
+% Adjust spacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{10pt}
+
+% Custom commands for contact info
+\newcommand{\contactline}[1]{
+    \small #1
+}
+
+% Signature spacing
+\newcommand{\signaturespace}{
+    \vspace{0.5in}
+}
+
+%-------------------------------------------
+%%%%%%  COVER LETTER STARTS HERE  %%%%%%%%%%
+%-------------------------------------------
+
+\begin{document}
+
+%-------------------------
+% IMPORT CONTENT FILE
+% All cover letter content is in cover-letter-content.tex
+%-------------------------
+\input{CL_content}
+
+\end{document}
