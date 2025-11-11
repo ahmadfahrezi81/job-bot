@@ -8,13 +8,19 @@
     └── 📁crawl4ai_debug
     └── 📁data
         └── 📁tmp_debug_pdf
+            ├── CL_content.tex
+            ├── main_CL.aux
+            ├── main_CL.pdf
+            ├── main_CL.tex
             ├── main.aux
             ├── main.pdf
             ├── main.tex
             ├── resume-content-run.tex
             ├── resume-content.tex
+        ├── CL_content.tex
         ├── debug-output.pdf
         ├── debug-tailored.tex
+        ├── main_CL.tex
         ├── main.aux
         ├── main.pdf
         ├── main.tex
@@ -26,6 +32,7 @@
         ├── crawl4ai_service.py
         ├── duplicate_checker_service.py
         ├── job_processor_service.py
+        ├── llm_cover_letter_service.py
         ├── llm_evaluation_service.py
         ├── llm_normalization_service.py
         ├── llm_resume_service.py

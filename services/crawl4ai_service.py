@@ -215,10 +215,18 @@ async def crawl4ai_extract(url: str) -> dict:
                 raise Exception(f"Crawl failed: {result.error_message}")
 
             # Debug: Save raw markdown
+            # markdown_debug = f"{DEBUG_DIR}/markdown_{timestamp}.md"
+            # with open(markdown_debug, "w", encoding="utf-8") as f:
+            #     f.write(result.markdown or "NO MARKDOWN")
+            # logger.info(f"[Crawl4AI] Saved markdown → {markdown_debug}")
+
+            # Debug: Save raw markdown (force flush to disk)
             markdown_debug = f"{DEBUG_DIR}/markdown_{timestamp}.md"
             with open(markdown_debug, "w", encoding="utf-8") as f:
                 f.write(result.markdown or "NO MARKDOWN")
-            logger.info(f"[Crawl4AI] Saved markdown → {markdown_debug}")
+                f.flush()
+                os.fsync(f.fileno())
+            logger.info(f"[Crawl4AI] ✅ Markdown file flushed: {markdown_debug}")
 
             # ✅ Check if job is unavailable (before LLM parsing)
             is_unavailable, unavailable_reason = detect_job_unavailable(
