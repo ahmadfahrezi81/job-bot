@@ -3,8 +3,10 @@
     └── 📁.venv
     └── 📁app
         └── 📁__pycache__
+        ├── celery_app.py
         ├── main.py
         ├── routes.py
+        ├── tasks.py
     └── 📁crawl4ai_debug
     └── 📁data
         └── 📁tmp_debug_pdf
@@ -43,6 +45,7 @@
     ├── .gitignore
     ├── .python-version
     ├── Dockerfile
+    ├── dump.rdb
     ├── FOLDERSTRUCTURE.md
     ├── notion_test_httpx_async.py
     ├── notion_test_httpx.py
