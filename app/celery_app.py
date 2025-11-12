@@ -6,7 +6,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Redis connection
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+# REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
+
 
 celery_app = Celery(
     "job_bot",
