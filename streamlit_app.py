@@ -180,6 +180,22 @@ def queue_job(url: str, force_playwright: bool = False) -> Dict:
     return {"error": "Unknown error"}
 
 
+def queue_job_batch(urls: List[str], force_playwright: bool = False) -> Dict:
+    """Queue multiple jobs at once"""
+    try:
+        response = requests.post(
+            f"{API_BASE}/jobs/batch",
+            json={"urls": urls, "force_playwright": force_playwright},
+            timeout=30,
+        )
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return {"error": f"HTTP {response.status_code}: {response.text}"}
+    except Exception as e:
+        return {"error": str(e)}
+
+
 def retry_job(url: str, force_playwright: bool = False) -> Dict:
     """Retry a failed job by re-queueing it"""
     return queue_job(url, force_playwright)
@@ -280,14 +296,49 @@ with col_btn4:
     st.session_state.auto_refresh = not auto_refresh_toggle
 
 # Queue jobs
+# if queue_btn and urls:
+#     with st.spinner(f"Queueing {len(urls)} jobs..."):
+#         success_count = 0
+#         for url in urls:
+#             result = queue_job(url, force_playwright)
+
+#             if "job_id" in result:
+#                 job_id = result["job_id"]
+#                 st.session_state.jobs[job_id] = {
+#                     "job_id": job_id,
+#                     "url": url,
+#                     "status": "queued",
+#                     "stage": "queued",
+#                     "progress": 0,
+#                     "result": None,
+#                     "result_status": None,
+#                     "added_at": datetime.now().strftime("%H:%M:%S"),
+#                     "force_playwright": force_playwright,
+#                 }
+#                 success_count += 1
+#             else:
+#                 st.error(f"Failed to queue: {url} -> {result.get('error', 'unknown')}")
+
+#         if success_count > 0:
+#             st.success(f"✅ Queued {success_count} job(s)!")
+#             if auto_clear:
+#                 st.session_state.url_text = ""
+#             # force immediate poll on rerun
+#             st.session_state.last_poll = 0
+#             time.sleep(0.3)
+#             st.rerun()
+
 if queue_btn and urls:
     with st.spinner(f"Queueing {len(urls)} jobs..."):
-        success_count = 0
-        for url in urls:
-            result = queue_job(url, force_playwright)
+        result = queue_job_batch(urls, force_playwright)
 
-            if "job_id" in result:
-                job_id = result["job_id"]
+        if "jobs" in result:
+            queued_jobs = [j for j in result["jobs"] if "job_id" in j]
+            failed_jobs = [j for j in result["jobs"] if "error" in j]
+
+            for job in queued_jobs:
+                job_id = job["job_id"]
+                url = job["url"]
                 st.session_state.jobs[job_id] = {
                     "job_id": job_id,
                     "url": url,
@@ -299,18 +350,20 @@ if queue_btn and urls:
                     "added_at": datetime.now().strftime("%H:%M:%S"),
                     "force_playwright": force_playwright,
                 }
-                success_count += 1
-            else:
-                st.error(f"Failed to queue: {url} -> {result.get('error', 'unknown')}")
 
-        if success_count > 0:
-            st.success(f"✅ Queued {success_count} job(s)!")
+            if queued_jobs:
+                st.success(f"✅ Queued {len(queued_jobs)} job(s) successfully!")
+            if failed_jobs:
+                st.warning(f"⚠️ Failed to queue {len(failed_jobs)} job(s). Check logs.")
+
             if auto_clear:
                 st.session_state.url_text = ""
-            # force immediate poll on rerun
             st.session_state.last_poll = 0
             time.sleep(0.3)
             st.rerun()
+        else:
+            st.error(f"Error queueing jobs: {result.get('error', 'unknown error')}")
+
 
 st.divider()
 
@@ -337,9 +390,29 @@ else:
 
     if should_refresh or refresh_btn:
         with st.spinner("Polling active jobs..."):
+
+            # --- NEW: Use batch status endpoint ---
+            try:
+                response = requests.post(
+                    f"{API_BASE}/jobs/batch/status",
+                    json=active_jobs,  # list of job IDs
+                    timeout=15,
+                )
+                if response.status_code == 200:
+                    batch_status = response.json()
+                    status_map = {
+                        j["job_id"]: j["status"] for j in batch_status.get("jobs", [])
+                    }
+                else:
+                    st.warning(f"Batch status request failed ({response.status_code})")
+                    status_map = {}
+            except Exception as e:
+                st.warning(f"Batch status check failed: {e}")
+                status_map = {}
+
+            # --- Update each job in session state ---
             for job_id in active_jobs:
-                status_data = poll_job_status(job_id)
-                raw_status = str(status_data.get("status", "")).lower()
+                raw_status = str(status_map.get(job_id, "unknown")).lower()
 
                 if raw_status in ("pending", "waiting"):
                     normalized_status = "queued"
@@ -352,24 +425,51 @@ else:
                 else:
                     normalized_status = raw_status or "unknown"
 
-                # Update job state
                 job = st.session_state.jobs[job_id]
                 job["status"] = normalized_status
-                job["stage"] = status_data.get(
-                    "stage", job.get("stage", normalized_status)
-                )
-                job["progress"] = status_data.get("progress", job.get("progress", 0))
-
-                if "result" in status_data and status_data.get("result") is not None:
-                    job["result"] = status_data["result"]
-                    if isinstance(status_data["result"], dict):
-                        job["result_status"] = status_data["result"].get("status")
+                job["stage"] = job.get("stage", normalized_status)
 
                 if normalized_status == "completed":
                     job["completed_at"] = datetime.now().strftime("%H:%M:%S")
 
             st.session_state.last_poll = time.time()
         st.rerun()
+
+    # if should_refresh or refresh_btn:
+    #     with st.spinner("Polling active jobs..."):
+    #         for job_id in active_jobs:
+    #             status_data = poll_job_status(job_id)
+    #             raw_status = str(status_data.get("status", "")).lower()
+
+    #             if raw_status in ("pending", "waiting"):
+    #                 normalized_status = "queued"
+    #             elif raw_status in ("processing", "process", "started"):
+    #                 normalized_status = "processing"
+    #             elif raw_status in ("success", "completed", "finished"):
+    #                 normalized_status = "completed"
+    #             elif raw_status in ("failure", "failed", "error"):
+    #                 normalized_status = "failed"
+    #             else:
+    #                 normalized_status = raw_status or "unknown"
+
+    #             # Update job state
+    #             job = st.session_state.jobs[job_id]
+    #             job["status"] = normalized_status
+    #             job["stage"] = status_data.get(
+    #                 "stage", job.get("stage", normalized_status)
+    #             )
+    #             job["progress"] = status_data.get("progress", job.get("progress", 0))
+
+    #             if "result" in status_data and status_data.get("result") is not None:
+    #                 job["result"] = status_data["result"]
+    #                 if isinstance(status_data["result"], dict):
+    #                     job["result_status"] = status_data["result"].get("status")
+
+    #             if normalized_status == "completed":
+    #                 job["completed_at"] = datetime.now().strftime("%H:%M:%S")
+
+    #         st.session_state.last_poll = time.time()
+    #     st.rerun()
 
     # Display jobs (no colored background boxes)
     for i, (job_id, job) in enumerate(st.session_state.jobs.items(), start=1):

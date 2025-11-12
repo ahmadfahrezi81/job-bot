@@ -1,5 +1,7 @@
 # app/routes.py
-from fastapi import APIRouter, HTTPException
+from typing import List
+import time
+from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel, HttpUrl
 from app.tasks import process_job_task
 from celery.result import AsyncResult
@@ -11,6 +13,11 @@ router = APIRouter()
 
 class JobURLInput(BaseModel):
     url: HttpUrl
+    force_playwright: bool = False
+
+
+class JobBatchInput(BaseModel):
+    urls: List[HttpUrl]
     force_playwright: bool = False
 
 
@@ -95,6 +102,66 @@ async def get_job_status(job_id: str):
     except Exception as e:
         logger.error(f"Error checking job status: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/jobs/batch")
+async def add_job_batch(batch_input: JobBatchInput):
+    """
+    Queue multiple jobs at once.
+    Returns immediately with all job_ids for tracking.
+    """
+    job_ids = []
+
+    for url in batch_input.urls:
+        try:
+            task = process_job_task.apply_async(
+                args=[str(url), batch_input.force_playwright]
+            )
+            job_ids.append(
+                {
+                    "job_id": task.id,
+                    "url": str(url),
+                    "status_url": f"/jobs/{task.id}/status",
+                }
+            )
+        except Exception as e:
+            logger.error(f"Failed to queue {url}: {e}")
+            job_ids.append(
+                {"url": str(url), "error": str(e), "status": "failed_to_queue"}
+            )
+
+    return {
+        "status": "queued",
+        "total_submitted": len(batch_input.urls),
+        "total_queued": len([j for j in job_ids if "job_id" in j]),
+        "jobs": job_ids,
+        "message": f"Queued {len(job_ids)} jobs for processing",
+    }
+
+
+@router.post("/jobs/batch/status")
+async def get_batch_status(job_ids: List[str]):
+    """
+    Check status of multiple jobs at once
+    """
+    results = []
+    for job_id in job_ids:
+        task_result = AsyncResult(job_id)
+        results.append(
+            {
+                "job_id": job_id,
+                "status": task_result.state.lower(),
+            }
+        )
+
+    return {
+        "total": len(job_ids),
+        "completed": len([r for r in results if r["status"] == "success"]),
+        "failed": len([r for r in results if r["status"] == "failure"]),
+        "processing": len([r for r in results if r["status"] == "processing"]),
+        "pending": len([r for r in results if r["status"] == "pending"]),
+        "jobs": results,
+    }
 
 
 @router.post("/jobs/{job_id}/retry")
