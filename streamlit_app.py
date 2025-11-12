@@ -10,7 +10,7 @@ from streamlit_autorefresh import st_autorefresh  # ✅ Added import
 
 # Load environment variables
 load_dotenv()
-API_BASE = os.getenv("API_BASE", "http://localhost:8000")
+API_BASE = st.secrets.get("API_BASE", os.getenv("API_BASE", "http://localhost:8000"))
 
 # Page config
 st.set_page_config(
