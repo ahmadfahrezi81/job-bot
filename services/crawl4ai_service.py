@@ -81,18 +81,36 @@
 #     return "unknown"
 
 
-# def detect_job_unavailable(markdown: str, url: str) -> tuple[bool, str | None]:
+# def detect_job_unavailable(
+#     markdown: str, url: str, http_status: int = None
+# ) -> tuple[bool, str | None]:
 #     """
 #     Detect if a job posting is no longer available.
 
+#     Uses multi-layered detection:
+#     1. HTTP status code (most reliable)
+#     2. Content length checks
+#     3. Specific error patterns (tightened to avoid false positives)
+#     4. Job content validation
+
 #     Returns: (is_unavailable, reason)
 #     """
+#     # Layer 1: Check HTTP status first (most reliable)
+#     if http_status and http_status >= 400:
+#         if http_status == 404:
+#             return True, f"HTTP 404 - Page not found"
+#         elif http_status == 410:
+#             return True, f"HTTP 410 - Page gone"
+#         else:
+#             return True, f"HTTP {http_status} - Server error"
+
+#     # Layer 2: Check content length
 #     if not markdown or len(markdown.strip()) < 100:
 #         return True, "Page content too short or empty"
 
 #     markdown_lower = markdown.lower()
 
-#     # Common patterns for unavailable jobs
+#     # Layer 3: Specific unavailable patterns (TIGHTENED - more specific)
 #     unavailable_patterns = [
 #         ("position has been filled", "Position already filled"),
 #         ("this job is no longer available", "Job posting closed"),
@@ -100,21 +118,41 @@
 #         ("job posting is no longer active", "Job no longer active"),
 #         ("position is no longer open", "Position closed"),
 #         ("this position has been closed", "Position closed"),
-#         ("404", "Page not found (404)"),
-#         ("page not found", "Page not found"),
 #         (
 #             "sorry, this job is no longer accepting applications",
 #             "No longer accepting applications",
 #         ),
 #         ("this opportunity is no longer available", "Opportunity closed"),
+#         # More specific 404 patterns to avoid false positives
+#         ("error 404", "Page not found (404)"),
+#         ("http 404", "Page not found (404)"),
+#         ("404 not found", "Page not found (404)"),
+#         ("404 error", "Page not found (404)"),
+#         # Only trigger on "page not found" in title/header context
+#         ("page not found", "Page not found"),
 #     ]
 
 #     for pattern, reason in unavailable_patterns:
 #         if pattern in markdown_lower:
-#             logger.warning(f"[Crawl4AI] 🚫 Detected unavailable job: {reason}")
-#             return True, reason
+#             # Extra validation for "404" and "page not found" - check if it's in meaningful context
+#             if "404" in pattern or "page not found" in pattern:
+#                 # Check if it appears in first 500 chars (likely header/title)
+#                 if pattern in markdown_lower[:500]:
+#                     logger.warning(f"[Crawl4AI] 🚫 Detected unavailable job: {reason}")
+#                     return True, reason
+#                 # Or if content is very short (< 500 chars total)
+#                 elif len(markdown) < 500:
+#                     logger.warning(f"[Crawl4AI] 🚫 Detected unavailable job: {reason}")
+#                     return True, reason
+#                 # Otherwise skip this pattern (likely false positive)
+#                 else:
+#                     continue
+#             else:
+#                 # Non-404 patterns - trigger immediately
+#                 logger.warning(f"[Crawl4AI] 🚫 Detected unavailable job: {reason}")
+#                 return True, reason
 
-#     # Check if content looks like actual job posting
+#     # Layer 4: Validate actual job content exists
 #     job_indicators = [
 #         "responsibilities",
 #         "requirements",
@@ -123,11 +161,13 @@
 #         "what you'll do",
 #         "job description",
 #         "apply now",
+#         "skills",
+#         "experience",
 #     ]
 
 #     has_job_content = any(indicator in markdown_lower for indicator in job_indicators)
 
-#     if not has_job_content and len(markdown) < 500:
+#     if not has_job_content and len(markdown) < 800:
 #         return True, "No job description found - possibly removed or expired"
 
 #     return False, None
@@ -214,11 +254,15 @@
 #             if not result.success:
 #                 raise Exception(f"Crawl failed: {result.error_message}")
 
-#             # Debug: Save raw markdown
-#             # markdown_debug = f"{DEBUG_DIR}/markdown_{timestamp}.md"
-#             # with open(markdown_debug, "w", encoding="utf-8") as f:
-#             #     f.write(result.markdown or "NO MARKDOWN")
-#             # logger.info(f"[Crawl4AI] Saved markdown → {markdown_debug}")
+#             # Extract HTTP status if available
+#             http_status = None
+#             try:
+#                 if hasattr(result, "status_code"):
+#                     http_status = result.status_code
+#                 elif hasattr(result, "response") and result.response:
+#                     http_status = getattr(result.response, "status", None)
+#             except:
+#                 pass
 
 #             # Debug: Save raw markdown (force flush to disk)
 #             markdown_debug = f"{DEBUG_DIR}/markdown_{timestamp}.md"
@@ -228,9 +272,9 @@
 #                 os.fsync(f.fileno())
 #             logger.info(f"[Crawl4AI] ✅ Markdown file flushed: {markdown_debug}")
 
-#             # ✅ Check if job is unavailable (before LLM parsing)
+#             # ✅ Check if job is unavailable (before LLM parsing) - with HTTP status
 #             is_unavailable, unavailable_reason = detect_job_unavailable(
-#                 result.markdown, url
+#                 result.markdown, url, http_status
 #             )
 
 #             if is_unavailable:
@@ -298,6 +342,7 @@
 #             debug_payload = {
 #                 "url": url,
 #                 "success": result.success,
+#                 "http_status": http_status,
 #                 "extracted_content": normalized,
 #                 "markdown_length": len(result.markdown) if result.markdown else 0,
 #                 "timestamp": timestamp,
@@ -388,7 +433,15 @@ class NormalizedJob(BaseModel):
     company_name: str = Field(description="Company name")
     location: str | None = Field(description="Location or Remote", default=None)
     work_mode: str | None = Field(
-        description="Work arrangement: Remote, Hybrid, or Onsite", default=None
+        description=(
+            "Work arrangement. Must be one of: Remote, Hybrid, Onsite, Contract, Not specified. "
+            "Remote = fully remote/work from anywhere. "
+            "Hybrid = mix of office and remote. "
+            "Onsite = fully in-office. "
+            "Contract = temporary/contractual position. "
+            "Not specified = work mode not mentioned."
+        ),
+        default=None,
     )
     job_description: str = Field(
         description="Full cleaned job description with markdown formatting"
@@ -408,6 +461,71 @@ class NormalizedJob(BaseModel):
         description="Reason if job is not available (e.g., 'Position filled', 'Posting expired', 'Page not found')",
         default=None,
     )
+
+
+def normalize_work_mode(work_mode: str | None) -> str:
+    """
+    Normalize work mode to one of 5 standard categories.
+
+    Returns: Remote, Hybrid, Onsite, Contract, or Not specified
+    """
+    if not work_mode:
+        return "Not specified"
+
+    work_mode_lower = work_mode.lower().strip()
+
+    # Remote variations
+    if any(
+        term in work_mode_lower
+        for term in [
+            "remote",
+            "fully remote",
+            "work from anywhere",
+            "work from home",
+            "wfh",
+            "home based",
+            "telecommute",
+        ]
+    ):
+        return "Remote"
+
+    # Hybrid variations
+    if any(
+        term in work_mode_lower
+        for term in [
+            "hybrid",
+            "partially remote",
+            "flexible",
+            "remote / hybrid",
+            "hybrid working",
+        ]
+    ):
+        return "Hybrid"
+
+    # Contract variations
+    if any(
+        term in work_mode_lower
+        for term in ["contract", "contractual", "temporary", "temp", "freelance"]
+    ):
+        return "Contract"
+
+    # Onsite variations
+    if any(
+        term in work_mode_lower
+        for term in [
+            "onsite",
+            "on-site",
+            "office",
+            "in-office",
+            "on site",
+            "full-time",
+            "full_time",
+        ]
+    ):
+        return "Onsite"
+
+    # Default
+    return "Not specified"
 
 
 def infer_visa_feasibility(normalized: dict, user_country: str = "Indonesia") -> str:
@@ -558,6 +676,12 @@ async def crawl4ai_extract(url: str) -> dict:
         - Job title (e.g., "Software Engineer", "Product Manager")
         - Company name
         - Location information (city, country, or "Remote")
+        - Work mode: Classify into EXACTLY one of these 5 categories:
+          * "Remote" - fully remote, work from anywhere, WFH
+          * "Hybrid" - mix of office and remote work, flexible arrangement
+          * "Onsite" - fully in-office, on-site only
+          * "Contract" - temporary, contractual, freelance positions
+          * "Not specified" - work mode not clearly stated
         - Full job description including responsibilities, requirements, benefits
 
         Additionally, infer "visa_feasibility" from the perspective of an applicant based in **Indonesia**.
@@ -676,6 +800,12 @@ async def crawl4ai_extract(url: str) -> dict:
                     f"Missing required fields. Got: {list(normalized.keys())}"
                 )
 
+            # ✅ Normalize work_mode to standard categories
+            normalized["work_mode"] = normalize_work_mode(normalized.get("work_mode"))
+            logger.info(
+                f"[Crawl4AI] Work mode normalized to: {normalized['work_mode']}"
+            )
+
             # Add metadata
             normalized["url"] = url
             normalized["source_title"] = result.metadata.get("title", "")
@@ -693,7 +823,7 @@ async def crawl4ai_extract(url: str) -> dict:
 
             logger.info(
                 f"[Crawl4AI] ✅ Extracted: {normalized.get('job_title')} @ {normalized.get('company_name')} "
-                f"(Visa: {normalized.get('visa_feasibility')})"
+                f"(Work: {normalized.get('work_mode')}, Visa: {normalized.get('visa_feasibility')})"
             )
 
             # Save debug info
