@@ -1,17 +1,14 @@
 %-------------------------
-% Cover Letter Template
-% Author : Ahmad Fahrezi
-% License : MIT
-% 
-% INSTRUCTIONS FOR LLM UPDATES:
-% - DO NOT modify this file (cover-letter-main.tex)
-% - Only modify cover-letter-content.tex
-% - This file contains all formatting and styling
-%------------------------
+% COVER LETTER - MASTER TEMPLATE (NO STATIC CONTENT)
+% Author: Ahmad Fahrezi
+% Purpose: Formatting + structure only
+%-------------------------
 
 \documentclass[11pt,letterpaper]{letter}
 
-% Packages
+%-------------------------
+% Packages and Setup
+%-------------------------
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[margin=1in]{geometry}
@@ -29,10 +26,6 @@
     citecolor=black
 }
 
-% Font options (uncomment one if desired)
-% \usepackage[sfdefault]{roboto}
-% \usepackage{lmodern}
-
 % Remove default date
 \date{}
 
@@ -41,14 +34,10 @@
 \setlength{\parskip}{10pt}
 
 % Custom commands for contact info
-\newcommand{\contactline}[1]{
-    \small #1
-}
+\newcommand{\contactline}[1]{\small #1}
 
 % Signature spacing
-\newcommand{\signaturespace}{
-    \vspace{0.5in}
-}
+\newcommand{\signaturespace}{\vspace{0.5in}}
 
 %-------------------------------------------
 %%%%%%  COVER LETTER STARTS HERE  %%%%%%%%%%
@@ -57,9 +46,35 @@
 \begin{document}
 
 %-------------------------
-% IMPORT CONTENT FILE
-% All cover letter content is in cover-letter-content.tex
+% CONTACT INFO (STATIC)
+%-------------------------
+\contactline{
+\textbf{Ahmad Fahrezi} \\
+\href{mailto:ahmadfahrezi.kl@gmail.com}{ahmadfahrezi.kl@gmail.com} $|$ 
+\href{https://ahmadfahrezi.vercel.app/}{ahmadfahrezi.vercel.app} $|$ 
+\href{https://www.linkedin.com/in/ahmadfahrezi}{linkedin.com/in/ahmadfahrezi}
+}
+
+\vspace{0.3in}
+
+%-------------------------
+% SALUTATION (Optional static default)
+%-------------------------
+Dear Hiring Manager,
+
+%-------------------------
+% === DYNAMIC CONTENT AREA ===
+% The AI-generated content goes in CL_content.tex
 %-------------------------
 \input{CL_content}
+
+%-------------------------
+% SIGNATURE
+%-------------------------
+\signaturespace
+
+Sincerely,
+
+Ahmad Fahrezi
 
 \end{document}
