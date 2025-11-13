@@ -1,22 +1,5 @@
 %-------------------------
-% RESUME CONTENT FILE
-% 
-% LLM MODIFICATION INSTRUCTIONS:
-% This file contains ONLY the content of the resume (no formatting commands).
-% When tailoring for job applications:
-% 1. You can modify bullet points, but keep them concise and achievement-focused
-% 2. You can reorder sections if needed
-% 3. You can add/remove experiences or projects
-% 4. ALWAYS maintain the command structure shown below
-% 5. Do NOT remove \resumeSubHeadingListStart or \resumeSubHeadingListEnd
-% 6. Do NOT modify any \resumeSubheading, \resumeItem, or other command formats
-% 7. Keep all braces {} balanced
-% 8. Maintain consistent date formats (MMM. YYYY)
-%
-% COMMAND PATTERNS TO FOLLOW:
-% - Experience: \resumeSubheading{Title}{Date}{Company}{Location}
-% - Projects: \resumeProjectHeading{Name}{URL}{Tech Stack}
-% - Bullets: \resumeItem{Text content here}
+% RESUME CONTENT FILE (UPDATED)
 %-------------------------
 
 %-------------------------
@@ -33,89 +16,106 @@
 \section{Technical Skills}
  \begin{itemize}[leftmargin=0.15in, label={}]
     \small{\item{
-     \textbf{Languages}{: Python, JavaScript, TypeScript, Java, SQL, PHP} \\
-     \textbf{Frameworks}{: React, Next.js, React Native, Node.js, Spring Boot, Vue.js, Remix} \\
-     \textbf{Testing and Automation}{: Appium, Selenium, Jest, Pytest, Test Planning, QA Automation} \\
-     \textbf{Tools}{: Git, Docker, Firebase, AWS (EC2, S3), GitHub Actions, Figma, Supabase} \\ 
-     \textbf{Databases}{: PostgreSQL, MySQL, MongoDB, Oracle, Prisma, Firebase Realtime DB} \\
-     \textbf{Other}{: REST APIs, Authentication (JWT, OAuth, SSO), CI/CD, Agile/Scrum, SEO Optimization, RBAC} }}
+     \textbf{Languages}{: Python, JavaScript (ES6+), TypeScript, Java, PHP, SQL, HTML/CSS, C/C++, Dart, Go} \\
+     \textbf{Frameworks \& Libraries}{: React, Next.js, React Native, Node.js, Express, Vue.js, Remix, Spring Boot, Tailwind CSS, Redux Toolkit, Zustand, Prisma, Zod, Axios, Chart.js, shadcn/ui, TanStack Query, Expo} \\
+     \textbf{Testing \& QA}{: Selenium, Appium, Jest, Pytest, Cypress, Playwright, Postman, JUnit, Allure Reports, API \& E2E Testing, Test Planning, Regression Automation} \\
+     \textbf{DevOps \& Cloud}{: Docker, GitHub Actions, Firebase, Supabase, AWS (EC2, S3, Lambda), Vercel, Netlify, Nginx, Jenkins, CI/CD Pipelines, Monitoring (Sentry, Datadog)} \\
+     \textbf{Databases}{: PostgreSQL, MySQL, MongoDB, Oracle, SQLite, Redis, Firestore, Firebase Realtime DB} \\
+     \textbf{APIs \& Integrations}{: REST, GraphQL (basic), JWT, OAuth 2.0, SSO, RBAC, WebSockets, Stripe, Shopify, Google Maps, Cloudinary, OpenAI API} \\
+     \textbf{Tools \& Practices}{: Git, Jira, Trello, Figma, Notion, Agile/Scrum, TDD, SOLID, Clean Architecture, SEO, Accessibility (WCAG)} }}
  \end{itemize}
 
 %-------------------------
 % EXPERIENCE SECTION
-% Format: \resumeSubheading{Job Title}{Date Range}{Company Name}{Location}
 %-------------------------
 \section{Experience}
   \resumeSubHeadingListStart
 
     \resumeSubheading
-      {Software Engineer Intern -- QA Automation}{July 2024 -- Dec. 2024}
+      {Software Engineer Intern – QA Automation}{July 2024 -- Dec. 2024}
       {Grab}{Petaling Jaya, MY}
       \resumeItemListStart
         \resumeItem{Spearheaded development of an AI-powered test automation agent, eliminating manual scripting overhead for authentication workflows and accelerating test development by 60\%.}
-        \resumeItem{Delivered 22 production-grade Python automation scripts using Appium and Selenium frameworks, exceeding H2 2024 automation coverage targets by 15\% for Grab's Identity platform.}
-        \resumeItem{Collaborated cross-functionally with product managers, designers, and engineering teams across 3 squads to define comprehensive test strategies for new authentication features on iOS and Android platforms.}
-        \resumeItem{Executed critical weekly regression test suites ensuring platform stability and security for 200+ million Grab users across 8 Southeast Asian markets.}
-        \resumeItem{Identified and documented 40+ bugs across authentication flows, including 8 critical security vulnerabilities, directly contributing to improved user trust and platform reliability.}
-        \resumeItem{Designed and maintained detailed test documentation including test plans, test cases, and automation frameworks following industry best practices and Agile methodologies.}
+        \resumeItem{Delivered 22 production-grade Python automation scripts using Appium and Selenium, exceeding automation coverage targets by 15\% for Grab’s Identity platform.}
+        \resumeItem{Collaborated across 3 squads with PMs, designers, and engineers to define comprehensive test strategies for iOS and Android authentication features.}
+        \resumeItem{Executed weekly regression suites ensuring platform stability and security for 200+ million users across 8 Southeast Asian markets.}
+        \resumeItem{Integrated automated regression tests into CI/CD pipelines via GitHub Actions, enabling continuous test execution and faster defect feedback cycles.}
+        \resumeItem{Developed internal test reporting dashboard (Python + Allure) to visualize coverage metrics and build health, reducing manual reporting by 80\%.}
+        \resumeItem{Identified and documented 40+ bugs (8 critical), improving user trust and reliability.}
+        \resumeItem{Designed and maintained detailed test plans, cases, and automation frameworks under Agile best practices.}
       \resumeItemListEnd
-      
+
     \resumeSubheading
       {Frontend Developer}{Oct. 2022 -- Feb. 2024}
       {CommerceOwl}{Edmonton, CA (remote)}
       \resumeItemListStart
-        \resumeItem{Architected and delivered feature-rich web applications across multiple JavaScript ecosystems (React, Remix, Next.js, Vue.js) with 95\%+ test coverage using Jest and React Testing Library.}
-        \resumeItem{Drove 32\% increase in conversion rates for RecipeStack Shopify app through strategic UI/UX improvements, A/B testing, and performance optimizations that reduced page load times by 40\%.}
-        \resumeItem{Owned end-to-end design and implementation of ImagineAPI platform using Next.js, from Figma prototypes to production deployment, serving 200+ monthly active subscribers.}
+        \resumeItem{Engineered and shipped high-impact web applications across React, Next.js, Remix, and Vue.js, delivering scalable, maintainable frontends for SaaS and e-commerce clients.}
+        \resumeItem{Boosted RecipeStack Shopify app conversion rates by 32\% through UI/UX revamp, A/B testing, and page-load optimization (–40\% load time).}
+        \resumeItem{Designed and launched \textbf{ImagineAPI} (Next.js + Node.js), a production-grade image generation service serving 200+ active subscribers.}
             \resumeItemListStart
-                \resumeItem{Conducted user research and interviews with 50+ potential users to inform product design decisions, resulting in 78\% user satisfaction score.}
-                \resumeItem{Implemented advanced SEO strategies including dynamic sitemap generation, meta optimization, and Core Web Vitals improvements, achieving 137\% traffic growth and ranking jump from position 5 to 2 for target keywords.}
+                \resumeItem{Conducted 50+ user interviews to guide feature roadmap and improve developer experience (78\% satisfaction).}
+                \resumeItem{Implemented advanced SEO and Core Web Vitals strategies (dynamic sitemaps, structured metadata), driving 137\% organic traffic growth and improving search ranking from position \#5 → \#2.}
             \resumeItemListEnd
-        \resumeItem{Collaborated with backend teams to integrate RESTful APIs and optimize data fetching patterns, reducing client-side data requests by 45\%.}
+        \resumeItem{Developed internal TypeScript component library with Storybook to unify design patterns across multiple frontends and reduce UI redundancy by 25\%.}
+        \resumeItem{Integrated CI/CD pipelines via GitHub Actions + Vercel for automated testing and preview deployments, cutting release cycles by 80\%.}
+        \resumeItem{Partnered with backend teams to optimize REST API consumption, reducing network requests by 45\% and improving data load efficiency.}
+        \resumeItem{Collaborated closely with designers and PMs in Agile sprints to deliver pixel-perfect, responsive, and accessible interfaces (95+ Lighthouse accessibility scores).}
       \resumeItemListEnd
 
    \resumeSubheading
       {Software Engineer Intern}{July 2023 -- Oct. 2023}
       {UM PTM}{Kuala Lumpur, MY}
       \resumeItemListStart
-        \resumeItem{Instrumental in modernizing UM's legacy procurement system, building a full-stack web application using PHP MVC architecture and MySQL that streamlined procurement workflows for 500+ university staff.}
-        \resumeItem{Engineered robust server-side validation layer in PHP with MySQL constraints and triggers, preventing data corruption and ensuring compliance with university procurement policies.}
-        \resumeItem{Designed normalized database schema with 15+ tables handling complex procurement relationships including requisitions, approvals, vendors, and purchase orders.}
-        \resumeItem{Collaborated with stakeholders across 5 departments in Agile sprints to gather requirements, design system architecture, and deliver modular, maintainable code.}
+        \resumeItem{Modernized UM’s legacy procurement system into a modular PHP MVC + MySQL web application, streamlining requisition and approval workflows for 500+ staff.}
+        \resumeItem{Designed normalized database schema with 15+ relational tables handling requisitions, approvals, vendors, and purchase orders; enforced data integrity via foreign keys and constraints.}
+        \resumeItem{Engineered robust validation layers and server-side security checks ensuring full policy and audit compliance.}
+        \resumeItem{Implemented role-based access control (RBAC) and session management to safeguard confidential procurement data.}
+        \resumeItem{Built real-time reporting dashboard for transaction and approval tracking, reducing manual reporting time by 70\%.}
+        \resumeItem{Deployed system on Apache with Git version control and documented deployment procedures for internal IT maintenance.}
       \resumeItemListEnd
 
   \resumeSubHeadingListEnd
 
 %-------------------------
 % PROJECTS SECTION
-% Format: \resumeProjectHeading{Project Name}{GitHub URL}{Tech Stack}
 %-------------------------
 \section{Projects}
     \resumeSubHeadingListStart
+
+       \resumeProjectHeading{Job Bot -- AI-Powered Job Application Pipeline}{}{FastAPI, Celery, Redis, OpenAI GPT-4, Crawl4AI, Playwright, Supabase, LaTeX, Docker}
+          \resumeItemListStart
+            \resumeItem{Engineered an end-to-end asynchronous job pipeline for intelligent extraction, evaluation, and document generation.}
+            \resumeItem{Built a FastAPI microservice with Celery + Redis for concurrent job processing across 8 pipeline stages.}
+            \resumeItem{Integrated GPT-4 for job-fit scoring, resume tailoring, and natural-language cover letter generation.}
+            \resumeItem{Combined Crawl4AI and Playwright with LLM fallbacks for high-reliability job scraping across diverse boards.}
+            \resumeItem{Automated LaTeX-based resume/cover letter generation and Supabase upload with public CDN links.}
+            \resumeItem{Designed duplicate-detection and smart filtering (Notion API), cutting false positives by 40\%.}
+            \resumeItem{Deployed with Docker Compose, achieving <30s average processing time and 95\% uptime.}
+          \resumeItemListEnd
+
        \resumeProjectHeading{TeaPOS -- Multi-Tenant Point-of-Sale Platform}{https://github.com/ahmadfahrezi81/tea-pos}{Next.js 14, TypeScript, Supabase, PostgreSQL, Tailwind, Chart.js, shadcn/ui}
           \resumeItemListStart
-            \resumeItem{Architecting enterprise-grade, multi-tenant SaaS POS system supporting isolated data management for unlimited organizations with tenant-scoped users, stores, and real-time financial analytics.}
-            \resumeItem{Engineered normalized Supabase schema with 12+ relational tables (orders, products, tenants, expenses, summaries) implementing row-level security policies for bulletproof data isolation.}
-            \resumeItem{Built responsive admin dashboard leveraging Next.js 14 App Router, React Server Components, and Chart.js for real-time sales visualization and business intelligence.}
-            \resumeItem{Implemented granular role-based access control (RBAC) with store-level permissions using Supabase Auth, middleware policies, and custom authorization hooks.}
-            \resumeItem{Developed mobile-optimized POS interface with offline-first architecture and intelligent product search, achieving 35\% reduction in transaction processing time.}
-            \resumeItem{Designed RESTful API architecture with serverless functions for analytics endpoints (timeline metrics, store breakdowns, revenue forecasting) deployed on Vercel edge network.}
+            \resumeItem{Architected a multi-tenant SaaS POS platform with isolated tenant data, role-based permissions, and real-time analytics.}
+            \resumeItem{Designed a secure Supabase backend with 12+ relational tables, row-level security (RLS), and store-level RBAC policies.}
+            \resumeItem{Developed serverless REST APIs on the Vercel Edge network and documented backend contracts using OpenAPI specs.}
+            \resumeItem{Implemented modular, scalable architecture with shared UI libraries, reusable hooks, and type-safe Zod validation across layers.}
+            \resumeItem{Built mobile-optimized POS interfaces with offline caching, reducing transaction latency by 35\%.}
+            \resumeItem{Created custom analytics dashboards using Chart.js and React hooks for live sales and revenue insights.}
+            \resumeItem{Automated CI/CD pipelines via GitHub Actions and Vercel for seamless testing, migrations, and deployments.}
+            \resumeItem{Authored technical documentation and schema guidelines to support maintainability.}
           \resumeItemListEnd
+
        \resumeProjectHeading{Eco-Mobility Tracker}{https://github.com/ahmadfahrezi81/Eco-Mobility-Mobile-App}{React Native, Next.js, TypeScript, Redux, Firebase, Expo, Google Maps API}
           \resumeItemListStart
-            \resumeItem{Engineered cross-platform mobile application tracking real-time carbon footprints using GPS sensors, accelerometer data, and machine learning-based transport mode detection.}
-            \resumeItem{Designed hybrid system architecture combining React Native client with Next.js SSR dashboard for scalable data analytics, user management, and environmental impact visualization.}
-            \resumeItem{Optimized background location tracking with intelligent data batching and compression algorithms, reducing battery consumption by 28\% while maintaining 99\% sync reliability.}
-            \resumeItem{Integrated Google Maps Platform APIs for interactive route visualization, carbon emission heatmaps, and alternative eco-friendly route suggestions; managed real-time sync with Firebase Realtime Database.}
-            \resumeItem{Established automated CI/CD pipeline using Expo EAS and GitHub Actions for continuous testing, building, and deployment across Android and iOS platforms.}
+            \resumeItem{Built a cross-platform mobility tracker estimating carbon emissions using ML-based transport mode detection from GPS and accelerometer data.}
+            \resumeItem{Developed a React Native client integrated with a Next.js SSR analytics dashboard for insights, user profiles, and route history.}
+            \resumeItem{Designed a Firebase backend for authentication, geolocation, and emission data aggregation.}
+            \resumeItem{Implemented Redux state management and offline caching for reliable background tracking.}
+            \resumeItem{Optimized GPS batching and data compression, reducing battery usage by 28\% while maintaining 99\% sync reliability.}
+            \resumeItem{Integrated Google Maps APIs for route visualization, emission heatmaps, and eco-route suggestions.}
+            \resumeItem{Automated CI/CD pipelines with Expo EAS and GitHub Actions for streamlined Android/iOS deployments.}
           \resumeItemListEnd
-       \resumeProjectHeading{Tost -- Restaurant Management System}{https://github.com/ahmadfahrezi81/Tost}{Next.js, TypeScript, Tailwind, PostgreSQL, Prisma, Cloudinary}
-          \resumeItemListStart
-            \resumeItem{Led team of 5 developers using Agile methodologies to architect and deploy full-stack restaurant management platform handling menu operations, order processing, and reservation systems.}
-            \resumeItem{Designed modular system architecture with clear separation of concerns, enabling independent scaling of menu management, order workflow, and table booking modules.}
-            \resumeItem{Implemented secure authentication system using Google OAuth 2.0 and JWT tokens with role-based access controls for staff, managers, and administrators.}
-            \resumeItem{Built type-safe data layer with PostgreSQL, Prisma ORM, and Zod schema validation ensuring data integrity across all database operations and API endpoints.}
-          \resumeItemListEnd
+
     \resumeSubHeadingListEnd
 
 %-------------------------
@@ -125,8 +125,10 @@
   \resumeSubHeadingListStart
     \resumeSubheading
       {University of Malaya}{Kuala Lumpur, MY}
-      {Bachelor of Computer Science, Software Engineering}{Oct. 2021 -- Oct. 2025}
+      {Bachelor of Computer Science (Software Engineering)}{Oct. 2021 -- Aug. 2025}
     \resumeItemListStart
-        \resumeItem{\textbf{Relevant Coursework}: Data Structures and Algorithms, Database Systems (Oracle, MySQL, MongoDB), Object-Oriented Design and Implementation, Mobile App Development (Android), Machine Learning (TensorFlow), Web Development (Spring Boot, PHP, React), Software Engineering Principles}
+        \resumeItem{\textbf{CGPA}: 3.7 / 4.0 · \textbf{Dean’s List (2022–2024)}}
+        \resumeItem{\textbf{Relevant Coursework}: Data Structures \& Algorithms, Database Systems (Oracle, MySQL, MongoDB), Object-Oriented Design \& Implementation, Mobile App Development (Android), Machine Learning (TensorFlow), Web Development (Spring Boot, PHP, React), Software Engineering Principles}
+        \resumeItem{\textbf{Awards}: Winner – Sustainability FYP@UM 2023 · 3rd Place – CodeNection Hackathon 2022}
     \resumeItemListEnd
   \resumeSubHeadingListEnd
