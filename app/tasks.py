@@ -118,15 +118,15 @@ async def process_job_pipeline(task, url: str, force_playwright: bool):
         normalized["job_description"], visa_warning=visa_warning
     )
 
-    # Stage 4: Tailor resume + cover letter if match > 70
+    # Stage 4: Tailor resume + cover letter if match >= 70
     resume_data = None
     cover_letter_data = None
     resume_pdf_url = None
     cover_letter_pdf_url = None
     match_score = evaluation.get("match_score", 0)
 
-    if match_score > 70:
-        logger.info(f"Match score {match_score}% > 70%, tailoring documents...")
+    if match_score >= 70:
+        logger.info(f"Match score {match_score}% >= 70%, tailoring documents...")
 
         company = normalized.get("company_name", "company")
         job_title = normalized.get("job_title", "role")
@@ -217,7 +217,7 @@ async def process_job_pipeline(task, url: str, force_playwright: bool):
             logger.error(f"Cover letter tailoring failed: {str(e)}")
 
     else:
-        logger.info(f"Match score {match_score}% ≤ 70, skipping document generation")
+        logger.info(f"Match score {match_score}% < 70, skipping document generation")
 
     # Stage 5: Save to Notion
     task.update_state(
@@ -280,7 +280,7 @@ async def process_job_pipeline(task, url: str, force_playwright: bool):
     else:
         response["resume_tailored"] = False
         response["resume_pdf_generated"] = False
-        response["resume_reason"] = f"Match score {match_score}% ≤ 70 threshold"
+        response["resume_reason"] = f"Match score {match_score}% < 70 threshold"
 
     # Add cover letter info
     if cover_letter_data:
@@ -300,6 +300,6 @@ async def process_job_pipeline(task, url: str, force_playwright: bool):
     else:
         response["cover_letter_tailored"] = False
         response["cover_letter_pdf_generated"] = False
-        response["cover_letter_reason"] = f"Match score {match_score}% ≤ 70 threshold"
+        response["cover_letter_reason"] = f"Match score {match_score}% < 70 threshold"
 
     return response

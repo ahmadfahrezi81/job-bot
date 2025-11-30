@@ -70,6 +70,27 @@ def fix_latex_escaping(latex_content: str) -> str:
     if total_fixes > 0:
         logger.info(f"✅ Total placeholder conversions: {total_fixes}")
 
+    # 4. Safety net: Escape any remaining raw special characters
+    # (in case LLM didn't use placeholders)
+    safety_escapes = {
+        '%': r'\%',
+        '$': r'\$',
+        '&': r'\&',
+        '#': r'\#',
+        '_': r'\_',
+    }
+    
+    safety_fixes = 0
+    for char, escape in safety_escapes.items():
+        count = latex_content.count(char)
+        if count > 0:
+            latex_content = latex_content.replace(char, escape)
+            logger.warning(f"⚠️ Safety escape: {count} × '{char}' → '{escape}' (LLM didn't use placeholder)")
+            safety_fixes += count
+    
+    if safety_fixes > 0:
+        logger.warning(f"⚠️ Total safety escapes applied: {safety_fixes}")
+
     return latex_content
 
 

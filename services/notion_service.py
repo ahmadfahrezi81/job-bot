@@ -37,9 +37,9 @@ async def save_job_to_notion(
 
     Args:
         job_data: Job information and evaluation results
-        resume_data: Optional tailored resume data (if match_score > 70)
+        resume_data: Optional tailored resume data (if match_score >= 70)
         pdf_url: Optional public URL to compiled PDF resume
-        cover_letter_data: Optional tailored cover letter data (if match_score > 70)
+        cover_letter_data: Optional tailored cover letter data (if match_score >= 70)
         cover_letter_pdf_url: Optional public URL to compiled PDF cover letter
     """
     # Create a fresh client for this task

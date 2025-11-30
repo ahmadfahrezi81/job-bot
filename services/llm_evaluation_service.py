@@ -73,31 +73,45 @@ JOB DESCRIPTION:
 Return ONLY valid JSON in this exact structure:
 
 {{
-    "match_score": (integer between 0–100),
+    "technical_skills_score": (integer 0-100),
+    "experience_match_score": (integer 0-100),
+    "domain_knowledge_score": (integer 0-100),
+    "soft_skills_culture_score": (integer 0-100),
+    "match_score": (calculated weighted average integer),
     "summary": "Brief 1–2 sentence honest assessment of fit and readiness",
     "strengths": [
         "Specific strength #1",
         "Specific strength #2",
-        "Specific strength #3"
+        "Specific strength #3",
     ],
     "gaps": [
         "Specific gap #1",
-        "Specific gap #2"
+        "Specific gap #2",
+        "Specific gap #3",
     ],
     "story_assessment": "Weak/Moderate/Strong",
     "reasoning": "Brief explanation of why you gave this specific score"
 }}
 
-SCORING GUIDELINES:
-- **90–100**: Candidate has ALL critical skills and experience required.
-- **80–89**: Candidate has MOST critical skills; gaps are minor or learnable.
-- **60–79**: Moderate fit; some key requirements missing.
-- **< 60**: Major misalignment.
-- **IF VISA RESTRICTED**: If the job requires citizenship/green card/clearance that the candidate lacks, the score MUST be < 50 regardless of skills.
+SCORING GUIDELINES (Weighted):
+1. **Technical Skills (55%)**: Does the candidate have the hard skills (languages, frameworks, tools)?
+2. **Experience Match (20%)**: Do they have the required years of experience and relevant role history?
+3. **Domain Knowledge (10%)**: Do they understand the industry/sector (e.g., Fintech, EdTech, SaaS)?
+4. **Soft Skills & Culture (15%)**: Communication, leadership, or other soft traits mentioned.
+
+CALCULATION:
+match_score = (Technical * 0.55) + (Experience * 0.20) + (Domain * 0.10) + (Soft * 0.15)
+
+SCORE INTERPRETATION:
+- **90–100**: Perfect fit. Meets ALL requirements + nice-to-haves.
+- **80–89**: Strong fit. Meets ALL mandatory requirements.
+- **70–79**: Good fit. Worth applying. Meets core technical needs, minor gaps in nice-to-haves.
+- **60–69**: Moderate fit. Missing key requirements.
+- **< 60**: Poor fit.
 
 IMPORTANT:
-- Be decisive. Use the full range.
-- If the candidate is a great fit skill-wise, give a high score (90+) even if the resume needs tailoring.
+- Be decisive.
+- **IF VISA RESTRICTED**: If the job requires citizenship/green card/clearance that the candidate lacks, the score MUST be < 50 regardless of skills.
 """
 
     try:
@@ -113,6 +127,7 @@ IMPORTANT:
             ],
             reasoning_effort="medium",
             response_format={"type": "json_object"},
+            seed=42,
         )
 
         raw_content = response.choices[0].message.content
