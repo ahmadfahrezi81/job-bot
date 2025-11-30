@@ -55,12 +55,14 @@ async def evaluate_job_match(job_text: str, visa_warning: str = None) -> dict:
 
     # Build the prompt
     prompt = f"""
-You are an expert hiring manager, recruiter, and resume optimization specialist.
-Evaluate this candidate's master resume against the job description with professional, data-driven judgment.
+You are an expert hiring manager and recruiter.
+Evaluate this candidate's MASTER resume against the job description with professional, data-driven judgment.
 
 CANDIDATE CONTEXT:
 - Indonesian citizen, graduated from University of Malaya (Malaysia)
 - This is their MASTER resume (not yet tailored).
+- **CRITICAL**: Do NOT penalize the score for the resume being "generic" or "too long". Evaluate based on the **content** and whether the candidate possesses the required skills/experience.
+- **VISA STATUS**: {visa_warning or "None detected (assume eligible/possible)"}
 
 MASTER RESUME:
 {resume_content}
@@ -68,49 +70,40 @@ MASTER RESUME:
 JOB DESCRIPTION:
 {job_text}
 
-Return ONLY valid JSON in this exact structure (no markdown):
+Return ONLY valid JSON in this exact structure:
 
 {{
-    "match_score": (integer between 0–100 — do not default to 75; choose a value that truly represents the overall fit based on evidence),
+    "match_score": (integer between 0–100),
     "summary": "Brief 1–2 sentence honest assessment of fit and readiness",
     "strengths": [
-        "Specific strength #1 with example from resume",
+        "Specific strength #1",
         "Specific strength #2",
-        "Specific strength #3",
-        "Specific strength #4"
+        "Specific strength #3"
     ],
     "gaps": [
-        "Specific gap #1 or missing requirement",
-        "Specific gap #2",
-        "Specific gap #3",
-        "Specific gap #4"
+        "Specific gap #1",
+        "Specific gap #2"
     ],
-    "story_assessment": "Weak/Moderate/Strong — Brief explanation of how logically their background leads to this role"
+    "story_assessment": "Weak/Moderate/Strong",
+    "reasoning": "Brief explanation of why you gave this specific score"
 }}
 
 SCORING GUIDELINES:
-- 90–100 → Excellent fit (ready with minimal tailoring)
-- 80–89 → Strong fit (competitive once optimized)
-- 60–79 → Moderate fit (addressable gaps)
-- 40–59 → Weak fit (major experience or skill gaps)
-- 0–39 → Poor fit (fundamental misalignment)
+- **90–100**: Candidate has ALL critical skills and experience required.
+- **80–89**: Candidate has MOST critical skills; gaps are minor or learnable.
+- **60–79**: Moderate fit; some key requirements missing.
+- **< 60**: Major misalignment.
+- **IF VISA RESTRICTED**: If the job requires citizenship/green card/clearance that the candidate lacks, the score MUST be < 50 regardless of skills.
 
-CALIBRATION EXAMPLES:
-- A resume 100% tailored to this job → 95–100.
-- A strong but slightly generic resume → 80–90.
-- A partially relevant resume → 60–79.
-- A clearly mismatched background → below 50.
-
-IMPORTANT INSTRUCTIONS:
-- Use the full 0–100 range; DO NOT default to 75 or 70.
-- Score must vary meaningfully depending on fit.
-- Be decisive and evidence-based: justify the score through the summary and listed strengths/gaps.
+IMPORTANT:
+- Be decisive. Use the full range.
+- If the candidate is a great fit skill-wise, give a high score (90+) even if the resume needs tailoring.
 """
 
     try:
-        logger.info("🚀 Sending request to OpenAI API...")
+        logger.info("🚀 Sending request to OpenAI API (o4-mini)...")
         response = await client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="o4-mini",
             messages=[
                 {
                     "role": "system",
@@ -118,7 +111,7 @@ IMPORTANT INSTRUCTIONS:
                 },
                 {"role": "user", "content": prompt},
             ],
-            temperature=0.5,
+            reasoning_effort="medium",
             response_format={"type": "json_object"},
         )
 

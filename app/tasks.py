@@ -113,7 +113,7 @@ async def process_job_pipeline(task, url: str, force_playwright: bool):
 
     # Stage 3: Evaluate
     task.update_state(state="PROCESSING", meta={"stage": "evaluating", "progress": 35})
-    visa_warning = normalized.get("visa_warning")
+    visa_warning = normalized.get("visa_feasibility")
     evaluation = await evaluate_job_match(
         normalized["job_description"], visa_warning=visa_warning
     )
