@@ -19,7 +19,7 @@ def load_master_resume() -> str:
 
 def fix_latex_escaping(latex_content: str) -> str:
     """
-    Convert LLM placeholders to proper LaTeX escapes.
+    Convert LLM placeholders to proper LaTeX escapes and sanitize common special characters.
 
     Placeholders avoid JSON escaping issues:
     - __APOS__ → ' (proper apostrophe/single quote)
@@ -28,16 +28,31 @@ def fix_latex_escaping(latex_content: str) -> str:
     - __HASH__ → \#
     - __DOLLAR__ → \$
     """
-    # First, clean up any backslashes before placeholders
+    # 1. Active Sanitization: Replace "smart" characters that break LaTeX
+    smart_replacements = {
+        "’": "'",   # Smart apostrophe
+        "‘": "'",   # Smart opening quote
+        "“": '"',   # Smart double quote
+        "”": '"',   # Smart closing quote
+        "–": "--",  # En-dash
+        "—": "---", # Em-dash
+        "…": "...", # Ellipsis
+    }
+    
+    for char, replacement in smart_replacements.items():
+        if char in latex_content:
+            latex_content = latex_content.replace(char, replacement)
+
+    # 2. Clean up any backslashes before placeholders
     latex_content = latex_content.replace(r"\__APOS__", "__APOS__")
     latex_content = latex_content.replace(r"\__PCT__", "__PCT__")
     latex_content = latex_content.replace(r"\__AMP__", "__AMP__")
     latex_content = latex_content.replace(r"\__HASH__", "__HASH__")
     latex_content = latex_content.replace(r"\__DOLLAR__", "__DOLLAR__")
 
-    # Convert placeholders to proper characters
+    # 3. Convert placeholders to proper characters
     replacements = {
-        "__APOS__": "'",  # UTF-8 right single quotation mark
+        "__APOS__": "'",
         "__AMP__": r" \& ",
         "__PCT__": r"\% ",
         "__HASH__": r" \#",

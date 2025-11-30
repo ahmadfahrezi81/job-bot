@@ -3,6 +3,7 @@ import asyncio
 import logging
 from pathlib import Path
 import shutil
+import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -22,8 +23,10 @@ async def compile_resume_to_pdf(tailored_content: str) -> bytes:
     if not main_tex_src.exists():
         raise FileNotFoundError("main.tex not found in data/ directory")
 
-    tmpdir_path = Path("data/tmp_debug_pdf")
-    tmpdir_path.mkdir(exist_ok=True)
+    # Create unique temp directory for this run
+    run_id = uuid.uuid4().hex[:8]
+    tmpdir_path = Path(f"data/tmp_debug_pdf/resume_{run_id}")
+    tmpdir_path.mkdir(parents=True, exist_ok=True)
 
     # Copy main.tex to temp directory
     main_tex_dest = tmpdir_path / "main.tex"
@@ -67,6 +70,13 @@ async def compile_resume_to_pdf(tailored_content: str) -> bytes:
 
     pdf_bytes = pdf_path.read_bytes()
     logger.info(f"✅ Resume PDF compiled successfully ({len(pdf_bytes)} bytes)")
+
+    # Cleanup temporary files on success
+    try:
+        shutil.rmtree(tmpdir_path)
+    except Exception as e:
+        logger.warning(f"Failed to cleanup temp dir {tmpdir_path}: {e}")
+
     return pdf_bytes
 
 
@@ -85,8 +95,10 @@ async def compile_cover_letter_to_pdf(tailored_content: str) -> bytes:
     if not main_cl_tex_src.exists():
         raise FileNotFoundError("main_CL.tex not found in data/ directory")
 
-    tmpdir_path = Path("data/tmp_debug_pdf")
-    tmpdir_path.mkdir(exist_ok=True)
+    # Create unique temp directory for this run
+    run_id = uuid.uuid4().hex[:8]
+    tmpdir_path = Path(f"data/tmp_debug_pdf/cl_{run_id}")
+    tmpdir_path.mkdir(parents=True, exist_ok=True)
 
     # Copy main_CL.tex to temp directory
     main_cl_tex_dest = tmpdir_path / "main_CL.tex"
@@ -130,4 +142,11 @@ async def compile_cover_letter_to_pdf(tailored_content: str) -> bytes:
 
     pdf_bytes = pdf_path.read_bytes()
     logger.info(f"✅ Cover letter PDF compiled successfully ({len(pdf_bytes)} bytes)")
+
+    # Cleanup temporary files on success
+    try:
+        shutil.rmtree(tmpdir_path)
+    except Exception as e:
+        logger.warning(f"Failed to cleanup temp dir {tmpdir_path}: {e}")
+
     return pdf_bytes
