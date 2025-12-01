@@ -169,6 +169,9 @@ Generate body paragraphs only (no header/signature). Use the candidate's resume 
 - Length: Approximately 150-200 words.
 - Tone: Natural, engaging, and professional. Avoid stiff corporate jargon or robotic AI phrases. Write as if you are a real person genuinely interested in the role.
 - Content: Focus on telling a story about the candidate's experience that connects with the job requirements.
+- Writing Style: Use shorter, more direct sentences. Mix sentence lengths. Reduce adjectives like "robust," "scalable," "production-grade." Include 1-2 simple personal touches (e.g., "I enjoy debugging" or "I like building reliable systems").
+- Metrics: Keep to 1-2 key metrics maximum. Don't overload with numbers.
+- Tech Stack: Don't list every technology. Only mention what's relevant to this specific role.
 - Use LaTeX escapes: __APOS__ for apostrophes, __PCT__ for percents, __AMP__ for ampersands.
 - Separate paragraphs with double newlines.
 
