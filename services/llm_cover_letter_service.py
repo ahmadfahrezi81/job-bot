@@ -54,7 +54,7 @@ def fix_latex_escaping(latex_content: str) -> str:
     replacements = {
         "__APOS__": "'",
         "__AMP__": r" \& ",
-        "__PCT__": r"\% ",
+        "__PCT__": r"\%",  # Removed trailing space
         "__HASH__": r" \#",
         "__DOLLAR__": r" \$",
     }
@@ -72,6 +72,9 @@ def fix_latex_escaping(latex_content: str) -> str:
 
     # 4. Safety net: Escape any remaining raw special characters
     # (in case LLM didn't use placeholders)
+    # Use regex negative lookbehind (?<!\\) to ensure we don't escape characters that are already escaped
+    import re
+    
     safety_escapes = {
         '%': r'\%',
         '$': r'\$',
@@ -82,11 +85,16 @@ def fix_latex_escaping(latex_content: str) -> str:
     
     safety_fixes = 0
     for char, escape in safety_escapes.items():
-        count = latex_content.count(char)
-        if count > 0:
-            latex_content = latex_content.replace(char, escape)
-            logger.warning(f"⚠️ Safety escape: {count} × '{char}' → '{escape}' (LLM didn't use placeholder)")
-            safety_fixes += count
+        # Regex pattern: find char NOT preceded by backslash
+        pattern = f"(?<!\\\\){re.escape(char)}"
+        
+        # Count matches first
+        matches = len(re.findall(pattern, latex_content))
+        
+        if matches > 0:
+            latex_content = re.sub(pattern, escape, latex_content)
+            logger.warning(f"⚠️ Safety escape: {matches} × '{char}' → '{escape}' (LLM didn't use placeholder)")
+            safety_fixes += matches
     
     if safety_fixes > 0:
         logger.warning(f"⚠️ Total safety escapes applied: {safety_fixes}")
@@ -168,7 +176,7 @@ Generate body paragraphs only (no header/signature). Use the candidate's resume 
 {master_resume}
 
 # Job Description
-{job_description[:10000]}
+{job_description}
 
 # Instructions
 1. Analyze the job description to understand what the company values.
@@ -204,7 +212,8 @@ Company: {company_name or '[Company]'}"""
                         "You are a skilled career coach who writes authentic, engaging cover letters. "
                         "Focus on storytelling and genuine connection rather than just listing metrics. "
                         "Avoid robotic phrasing and clichés. "
-                        "Use __APOS__ for apostrophes, __PCT__ for percents, __AMP__ for ampersands. "
+                        "Use __APOS__ for apostrophes, __AMP__ for ampersands. "
+                        "For percentages, write the number followed immediately by __PCT__ (e.g., '25__PCT__', not '__PCT__ 25'). "
                         "Return body paragraphs only (no header/footer). Return valid JSON."
                     ),
                 },
